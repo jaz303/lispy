@@ -5,7 +5,7 @@
 char *read_file(const char *filename) {
 	FILE *file = fopen(filename, "r");
 
-	return " (+ 1 2 #t  \"foo \\\"barn baz\") 1 0b1101101011 0x1010";
+	return " (+ -- -156 +2 #t  \"foo \\\"barn baz\") 1 0b1101101011 0x1010";
 }
 
 int main(int argc, char *argv[]) {

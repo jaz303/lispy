@@ -5,6 +5,7 @@
 
 #define curr()		(l->text[l->pos])
 #define next()		(l->pos++)
+#define back()		(l->pos--)
 #define emit(t)		l->token = t; return t
 #define errmit(msg)	l->error = msg; emit(T_ERROR)
 
@@ -52,18 +53,13 @@ static int is_whitespace(char c) {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-static int is_number_start(char c) {
-	return c == '-' || (c >= '0' && c <= '9');
-}
-
 static int is_ident_start(char c) {
 	if (c >= 'a' && c <= 'z') return 1;
 	if (c >= 'A' && c <= 'Z') return 1;
-	return strchr("<>=+*/_", c) != NULL;
+	return strchr("<>=+-*/_", c) != NULL;
 }
 
 static int is_ident_body(char c) {
-	if (c == '-') return 1;
 	return is_ident_start(c);
 }
 
@@ -80,6 +76,14 @@ static int is_atom_body(char c) {
 
 static token_t scan_number(lexer_t *l) {
 	l->curr_int = 0;
+
+	int mul = 1;
+	if (curr() == '+') {
+		next();
+	} else if (curr() == '-') {
+		mul = -1;
+		next();
+	}
 
 	if (curr() == '0') {
 		next();
@@ -116,7 +120,7 @@ static token_t scan_number(lexer_t *l) {
 		} else if (curr() == '.') {
 			// TODO: parse float
 		}
-	} else {
+	} else if (isdigit(curr())) {
 		while (isdigit(curr()) || curr() == '_') {
 			if (curr() != '_') {
 				l->curr_int = (l->curr_int * 10) + (curr() - '0');
@@ -124,8 +128,9 @@ static token_t scan_number(lexer_t *l) {
 			next();
 		}
 		if (curr() == '.') {
-			// TODO: parse float
+			errmit("floats not supported yet");
 		} else {
+			l->curr_int *= mul;
 			emit(T_INT);
 		}
 	}
@@ -252,12 +257,21 @@ token_t lexer_next(lexer_t *l) {
 		case ':':	return scan_atom(l);
 		default:
 		{
-			if (is_number_start(curr())) {
+			if (curr() == '-' || curr() == '+') {
+				next();
+				if (curr() >= '0' && curr() <= '9') {
+					back();
+					return scan_number(l);
+				} else {
+					back();
+					return scan_ident(l);
+				}
+			} else if (curr() >= '0' && curr() <= '9') {
 				return scan_number(l);
 			} else if (is_ident_start(curr())) {
 				return scan_ident(l);
 			} else {
-				return T_ERROR;
+				errmit("unexpected character");
 			}
 		}
 	}
