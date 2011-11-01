@@ -1,14 +1,15 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "lispy/ast.h"
+#include "lispy/lexer.h"
+#include "lispy/object.h"
 
 typedef struct parser {
-	const char		*source;
+	lexer_t			*lexer;
 	const char		*error;
 } parser_t;
 
-void		parser_init(parser_t *parser, const char *source);
-VALUE	parser_parse(parser_t *parser);
+void		parser_init(parser_t *parser, lexer_t *lexer);
+list_t*	parser_parse(parser_t *parser);
 
 #endif

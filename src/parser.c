@@ -1,157 +1,147 @@
 #include "lispy/parser.h"
+#include "lispy/value.h"
+#include "lispy/global.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
-#define PARSE_ERROR(msg) p->error = msg
+#define curr()				(lexer_current_token(p->lexer))
+#define accept()				(lexer_next(p->lexer))
+#define accept2(tok, msg)		if (curr() != tok) { p->error = msg; goto error; } else { accept(); }
 
-static obj_sexp_ast_t*	parse_sexp(parser_t *);
-static VALUE				parse_value(parser_t *);
-static obj_sexp_t*		parser_compact(parser_t *, obj_sexp_ast_t *);
+static int parse_list(parser_t *, list_t **list);
+static int parse_value(parser_t *, VALUE *value);
 
-void	 parser_init(parser_t *parser, const char *source) {
-	parser->source = source;
+void parser_init(parser_t *p, lexer_t *lexer) {
+	p->lexer = lexer;
 }
 
-void *parser_ast_alloc(parser_t *p, size_t sz) {
-	return malloc(sz);
-}
-
-void parser_ast_free(parser_t *p, void *thing) {
-	free(thing);
-}
-
-void* parser_sexp_alloc(parser_t *p, size_t sz) {
-	return malloc(sz);
-}
-
-void parser_sexp_free(parser_t *p, void *thing) {
-	free(thing);
-}
-
-obj_sexp_t* parser_parse(parser_t *p) {
-	obj_sexp_ast_t *ast = parse_sexp(p);
-	return parsed ? parser_compact(p, ast) : NULL;
-}
-
-obj_sexp_ast_t* parse_sexp(parser_t *p) {
-	obj_sexp_ast_t *sexp = parser_ast_alloc(p, sizeof(obj_sexp_ast_t));
-	if (sexp == NULL) {
-		PARSE_ERROR("alloc");
-		return NULL;
-	}
-
-	sexp->length	= 0;
-	sexp->head	= NULL;
-	sexp->tail	= NULL;
-
-	accept(T_L_PAREN);
-
-	while (curr() != T_R_PAREN) {
-		VALUE parsed = parse_value(p);
-		if (p->error) break;
-
-		obj_sexp_ast_node_t *node = parser_ast_alloc(p, sizeof(obj_sexp_ast_node_t));
-		if (node == NULL) {
-
-		}
-
-		node->next = NULL;
-		node->value = parsed;
-
-		if (sexp->head == NULL) {
-			sexp->head = node;
+list_t *parser_parse(parser_t *p) {
+	lexer_next(p->lexer);
+	list_t *ast;
+	if (parse_list(p, &ast)) {
+		if (curr() != T_EOF) {
+			p->error = "expecting EOF";
+			// TODO: free list
 		} else {
-			sexp->tail->next = node;
+			accept();
+			return ast;
 		}
-
-		sexp->tail = node;
-		sexp->length++;
 	}
-
-	accept(T_R_PAREN);
-
 	return NULL;
 }
 
-VALUE parse_value(parser_t *p) {
-	VALUE out = 0;
+struct tmp_list_node;
+struct tmp_list_node {
+	VALUE value;
+	struct tmp_list_node *next;
+};
+
+int parse_list(parser_t *p, list_t **list) {
+	size_t length = 0;
+	struct tmp_list_node *head = NULL, *tail = NULL;
+
+	accept2(T_L_PAREN, "expecting '('");
+
+	while (curr() != T_R_PAREN) {
+		VALUE parsed;
+		if (parse_value(p, &parsed)) {
+			struct tmp_list_node *tmp = malloc(sizeof(struct tmp_list_node));
+			if (!tmp) {
+				// cleanup
+			} else {
+				length++;
+				tmp->next = NULL;
+				tmp->value = parsed;
+				if (head == NULL) {
+					head = tmp;
+				} else {
+					tail->next = tmp;
+				}
+				tail = tmp;
+			}
+		} else {
+			// cleanup
+			return 0;
+		}
+	}
+
+	accept2(T_R_PAREN, "expecting ')'");
+
+	*list = list_create(NULL, length);
+	if (!*list) goto error;
+
+	{
+		struct tmp_list_node *curr = head, *tmp;
+		size_t ix = 0;
+		while (curr) {
+			(*list)->values[ix++] = curr->value;
+			tmp = curr->next;
+			free(curr);
+			curr = tmp;
+		}
+	}
+
+	return 1;
+
+error:
+	{
+		struct tmp_list_node *curr = head, *tmp;
+		while (curr) {
+			tmp = curr->next;
+			free(curr);
+			curr = tmp;
+		}
+	}
+
+	return 0;
+
+}
+
+int parse_value(parser_t *p, VALUE *value) {
 	switch (curr()) {
-		case T_INTEGER:
+		case T_INT:
 		{
-			out = MK_INTVAL(0); // TODO: get value
+			*value = MK_INTVAL(lexer_current_int(p->lexer));
+			accept();
+			return 1;
 		}
 		case T_L_PAREN:
 		{
-			out = parse_sexp(p);
+			return parse_list(p, (list_t**)value);
 		}
 		case T_TRUE:
 		{
-			out = kTrue;
+			*value = kTrue;
+			accept();
+			return 1;
 		}
 		case T_FALSE:
 		{
-			out = kFalse;
+			*value = kFalse;
+			accept();
+			return 1;
 		}
 		case T_ATOM:
 		{
-			out = MK_ATOM(0);
+			*value = MK_ATOM(0);
+			accept();
+			return 1;
 		}
 		case T_IDENT:
 		{
-			out = MK_IDENT(0);
+			*value = MK_IDENT(0);
+			accept();
+			return 1;
 		}
 		case T_STRING:
 		{
-			out = obj_mk_string_copy("");
-		}
-		default:
-		{
-
+			*value = string_create_copy(NULL, lexer_current_str(p->lexer));
+			accept();
+			return 1;
 		}
 	}
-	return out;
-}
 
-obj_sexp_t *parser_compact(parser_t *p, obj_sexp_ast_t *ast) {
-
-	obj_sexp_t *sexp = parser_sexp_alloc(p, sizeof(obj_sexp_t));
-	if (sexp == NULL) {
-		goto error;
-	} else {
-		sexp->obj.type = OBJ_TYPE_SEXP;
-		sexp->length = ast->length;
-		sexp->values = NULL;
-	}
-
-	if (ast->length > 0) {
-		sexp->values = parser_sexp_alloc(p, sizeof(VALUE) * ast->length);
-		if (sexp->values == NULL) goto error;
-	} else {
-		sexp->values = NULL;
-	}
-
-	obj_sexp_ast_node_t *curr = ast->head;
-	int ix = 0;
-
-	while (curr) {
-		if (OBJ_IS_SEXP_AST(curr->value)) {
-			sexp->values[ix] = parser_compact(p, (obj_sexp_ast_t *)curr->value);
-		} else {
-			sexp->values[ix] = curr->value;
-		}
-		curr = curr->next;
-		ix++;
-	}
-
-	return sexp;
-
-error:
-
-	if (sexp) {
-		if (sexp->values) parser_sexp_free(p, sexp->values);
-		parser_sexp_free(p, sexp);
-	}
-
-	return NULL;
-
+	p->error = "Unexpected token in input";
+	return 0;
 }

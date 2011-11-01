@@ -12,7 +12,9 @@ BUILD_DIR	=	build
 # Objects
 
 OBJS			=	src/lispy.o \
-				src/lexer.o
+				src/lexer.o \
+				src/object.o \
+				src/parser.o
 
 # Products
 

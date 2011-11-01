@@ -144,6 +144,7 @@ static token_t scan_string(lexer_t *l) {
 	int start = l->pos, len = 0, slash = 0;
 
 	for (;;) {
+		if (curr() == '\n') l->line++;
 		if (curr() == 0) {
 			errmit("unexpected EOF");
 		} else if (slash) {
@@ -249,7 +250,7 @@ token_t lexer_next(lexer_t *l) {
 	}
 
 	switch (curr()) {
-		case 0:		return T_EOF;
+		case 0:		{ emit(T_EOF); }
 		case '(':	{ next(); emit(T_L_PAREN); }
 		case ')':	{ next(); emit(T_R_PAREN); }
 		case '"':	return scan_string(l);
@@ -275,6 +276,10 @@ token_t lexer_next(lexer_t *l) {
 			}
 		}
 	}
+}
+
+token_t lexer_current_token(lexer_t *l) {
+	return l->token;
 }
 
 INT lexer_current_int(lexer_t *l) {

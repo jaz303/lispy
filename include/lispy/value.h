@@ -13,14 +13,15 @@
 #define _SPECIAL_SHIFT			2
 
 #define _SPECIAL_NIL				0
-#define _SPECIAL_TRUE				1	// true and false are the only
-#define _SPECIAL_FALSE			3	// odd values
+#define _SPECIAL_FALSE			1
+#define _SPECIAL_TRUE				3
 #define _SPECIAL_ATOM				4
 #define _SPECIAL_IDENT			6
 
 #define _NIL_MASK				(_SPECIAL_BIT | (_SPECIAL_NIL << _SPECIAL_SHIFT))
-#define _TRUE_MASK				(_SPECIAL_BIT | (_SPECIAL_TRUE << _SPECIAL_SHIFT))
+#define _BOOL_MASK				(_SPECIAL_BIT | (_SPECIAL_FALSE << _SPECIAL_SHIFT))
 #define _FALSE_MASK				(_SPECIAL_BIT | (_SPECIAL_FALSE << _SPECIAL_SHIFT))
+#define _TRUE_MASK				(_SPECIAL_BIT | (_SPECIAL_TRUE << _SPECIAL_SHIFT))
 #define _ATOM_MASK				(_SPECIAL_BIT | (_SPECIAL_ATOM << _SPECIAL_SHIFT))
 #define _IDENT_MASK				(_SPECIAL_BIT | (_SPECIAL_IDENT << _SPECIAL_SHIFT))
 
@@ -47,12 +48,13 @@
 
 // Boolean
 
-#define kTrue					(_TRUE_MASK)
-#define kFalse					(_FALSE_MASK)
+#define kTrue					((VALUE)(_TRUE_MASK))
+#define kFalse					((VALUE)(_FALSE_MASK))
 
-#define VALUE_IS_BOOL(v)			(((INT)v & _TRUE_MASK) == _TRUE_MASK)
+#define VALUE_IS_BOOL(v)			(((INT)v & _BOOL_MASK) == _BOOL_MASK)
 #define VALUE_IS_TRUE(v)			((INT)v == _TRUE_MASK)
 #define VALUE_IS_FALSE(v)			((INT)v == _FALSE_MASK)
+#define BOOLVAL(v)				((INT)v & ~_BOOL_MASK)
 
 // Atom
 
@@ -71,8 +73,7 @@
 // Object
 
 #define VALUE_IS_OBJECT(v)		(VALUE_IS_PTR(v))
-#define VALUE_IS_SEXP_AST(v)		(VALUE_IS_OBJECT(v) && OBJ_IS_SEXP_AST(v))
-#define VALUE_IS_SEXP(v)			(VALUE_IS_OBJECT(v) && OBJ_IS_SEXP(v))
+#define VALUE_IS_LIST(v)			(VALUE_IS_OBJECT(v) && OBJ_IS_LIST(v))
 #define VALUE_IS_STRING(v)		(VALUE_IS_OBJECT(v) && OBJ_IS_STRING(v))
 #define VALUE_IS_FLOAT(v)			(VALUE_IS_OBJECT(v) && OBJ_IS_FLOAT(v))
 

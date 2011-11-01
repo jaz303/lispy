@@ -19,6 +19,7 @@ typedef struct lexer {
 void				lexer_init(lexer_t *l, const char *text);
 token_t			lexer_next(lexer_t *l);
 
+token_t			lexer_current_token(lexer_t *l);
 INT				lexer_current_int(lexer_t *l);
 const char*		lexer_current_str(lexer_t *l);
 
