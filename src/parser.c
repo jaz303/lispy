@@ -12,8 +12,8 @@
 static int parse_list(parser_t *, list_t **list);
 static int parse_value(parser_t *, VALUE *value);
 
-void parser_init(parser_t *p, lexer_t *lexer) {
-	p->lexer = lexer;
+void parser_init(parser_t *p) {
+    p->error = NULL;
 }
 
 list_t *parser_parse(parser_t *p) {
@@ -124,13 +124,13 @@ int parse_value(parser_t *p, VALUE *value) {
 		}
 		case T_ATOM:
 		{
-			*value = MK_ATOM(0);
+			*value = MK_ATOM(intern_table_put(p->intern, lexer_current_str(p->lexer)));
 			accept();
 			return 1;
 		}
 		case T_IDENT:
 		{
-			*value = MK_IDENT(0);
+			*value = MK_IDENT(intern_table_put(p->intern, lexer_current_str(p->lexer)));
 			accept();
 			return 1;
 		}

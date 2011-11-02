@@ -4,6 +4,7 @@
 #include "lispy/object.h"
 #include "lispy/parser.h"
 #include "lispy/value.h"
+#include "lispy/intern.h"
 
 char *read_file(const char *filename) {
 	FILE *file = fopen(filename, "r");
@@ -35,12 +36,18 @@ void pretty_print(VALUE v, int i) {
 }
 
 int main(int argc, char *argv[]) {
+    
+    intern_table_t intern;
+    intern_table_init(&intern);
 
 	lexer_t lexer;
 	lexer_init(&lexer, read_file("test.lispy"));
-
-	parser_t parser;
-	parser_init(&parser, &lexer);
+	
+    parser_t parser;
+    parser.lexer = &lexer;
+    parser.intern = &intern;
+	
+	parser_init(&parser);
 
 	list_t *ast = parser_parse(&parser);
 
