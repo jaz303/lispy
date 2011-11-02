@@ -21,7 +21,7 @@ typedef enum token {
 	T_INT			=  3,
 	T_TRUE			=  4,
 	T_FALSE			=  5,
-	T_STRING			=  6,
+	T_STRING		=  6,
 	T_ATOM			=  7,
 	T_IDENT			=  8
 } token_t;

@@ -9,7 +9,7 @@ typedef struct parser {
 	const char		*error;
 } parser_t;
 
-void		parser_init(parser_t *parser, lexer_t *lexer);
+void	parser_init(parser_t *parser, lexer_t *lexer);
 list_t*	parser_parse(parser_t *parser);
 
 #endif

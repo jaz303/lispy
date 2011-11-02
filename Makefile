@@ -1,8 +1,8 @@
 CC			= gcc
 CPP			= g++
 
-CFLAGS		= -Iinclude
-CPPFLAGS		=
+CFLAGS		= -Iinclude -Iext/jazlib/include
+CPPFLAGS	=
 LDFLAGS		=
 
 # Config
@@ -11,10 +11,11 @@ BUILD_DIR	=	build
 
 # Objects
 
-OBJS			=	src/lispy.o \
+OBJS		=	src/lispy.o \
 				src/lexer.o \
 				src/object.o \
-				src/parser.o
+				src/parser.o \
+				src/intern.o
 
 # Products
 

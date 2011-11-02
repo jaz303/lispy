@@ -9,14 +9,14 @@ typedef struct lexer {
 	const char		*text;
 	int				pos;
 	INT				curr_int;
-	char				*curr_str;
+	char			*curr_str;
 	size_t			curr_str_sz;
 	token_t			token;
 	int				line;
 	const char		*error;
 } lexer_t;
 
-void				lexer_init(lexer_t *l, const char *text);
+void			lexer_init(lexer_t *l, const char *text);
 token_t			lexer_next(lexer_t *l);
 
 token_t			lexer_current_token(lexer_t *l);
