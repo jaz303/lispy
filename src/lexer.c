@@ -9,7 +9,7 @@
 #define emit(t)		l->token = t; return t
 #define errmit(msg)	l->error = msg; emit(T_ERROR)
 
-void	 lexer_init(lexer_t *l, const char *text) {
+void lexer_init(lexer_t *l, const char *text) {
 	l->text			= text;
 	l->pos			= 0;
 	l->curr_int		= 0;
