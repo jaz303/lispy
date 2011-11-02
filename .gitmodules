@@ -1,0 +1,3 @@
+[submodule "ext/jazlib"]
+	path = ext/jazlib
+	url = git@github.com:jaz303/jazlib.git
