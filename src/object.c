@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+// assumes 32 bit alignment :/
 #define ROUND(val) ((val + 3) & ~0x03)
 #define OFFSET(obj, bytes) (((char*)obj) + bytes)
 
@@ -41,7 +42,7 @@ list_t*	list_create(allocator_t *allocator, size_t length) {
 	
 	list_t *list = ALLOCATOR_ALLOC(allocator, obj_size + data_size);
 	if (list) {
-		OBJECT_SETUP(list, TYPE_LIST, allocator);
+		OBJ_SETUP(list, TYPE_LIST, allocator);
 		list->length = length;
 		list->values = (VALUE*) OFFSET(list, obj_size);
 	}
@@ -52,9 +53,8 @@ list_t*	list_create(allocator_t *allocator, size_t length) {
 static void list_dealloc(void *list) {
 	list_t *self = (list_t*) list;
 	int i;
-	for (i = 0; i < self->length; i++) {
-		if (IS_OBJECT(self->values[i])) obj_dealloc(self->values[i]);
-	}
+	for (i = 0; i < self->length; i++)
+		OBJ_SAFE_DEALLOC(self->values[i]);
 }
 
 //
@@ -63,7 +63,7 @@ static void list_dealloc(void *list) {
 string_t* string_create(allocator_t *allocator, char *str) {
 	string_t *string = ALLOCATOR_ALLOC(allocator, sizeof(string_t));
 	if (string) {
-		OBJECT_SETUP(string, TYPE_STRING, allocator);
+		OBJ_SETUP(string, TYPE_STRING, allocator);
 		string->length = strlen(str);
 		string->string = str;
 	}
@@ -76,7 +76,7 @@ string_t* string_create_copy(allocator_t *allocator, const char *str) {
 	
 	string_t *string = ALLOCATOR_ALLOC(allocator, obj_size + str_size);
 	if (string) {
-		OBJECT_SETUP(string, TYPE_STRING, allocator);
+		OBJ_SETUP(string, TYPE_STRING, allocator);
 		string->length = strlen(str);
 		string->string = (char*) OFFSET(string, obj_size);
 		strcpy(string->string, str);
@@ -91,7 +91,7 @@ string_t* string_create_copy(allocator_t *allocator, const char *str) {
 float_t* float_create(allocator_t *allocator, float val) {
 	float_t *fl = ALLOCATOR_ALLOC(allocator, sizeof(float_t));
 	if (fl) {
-		OBJECT_SETUP(fl, TYPE_FLOAT, allocator);
+		OBJ_SETUP(fl, TYPE_FLOAT, allocator);
 		fl->value = val;
 	}
 	return fl;

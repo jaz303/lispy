@@ -25,7 +25,9 @@
 #define ALLOCATOR_REALLOC(a, ptr, sz)	(a == NULL ? (realloc(ptr, sz)) : (a->realloc(a, ptr, sz)))
 #define ALLOCATOR_FREE(a, ptr)			(a == NULL ? (free(ptr)) : (a->free(a, ptr)))
 
-#define OBJECT_SETUP(obj, type, allocator) \
+#define OBJ_SAFE_DEALLOC(obj)			(IS_OBJECT(obj) ? (obj_dealloc(obj),1) : 0)
+
+#define OBJ_SETUP(obj, type, allocator) \
 	((obj_t*)obj)->is_a = type; \
 	((obj_t*)obj)->allocator = allocator
 
