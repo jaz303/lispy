@@ -6,8 +6,10 @@
 #include <stdio.h>
 
 #define curr()				(lexer_current_token(p->lexer))
-#define accept()				(lexer_next(p->lexer))
-#define accept2(tok, msg)		if (curr() != tok) { p->error = msg; goto error; } else { accept(); }
+#define accept()			(lexer_next(p->lexer))
+#define accept_tok(tok)		((curr() == tok) ? (accept(),1) : 0)
+
+#define PARSE_ERROR(msg)	p->error = (msg)
 
 static int parse_list(parser_t *, list_t **list);
 static int parse_value(parser_t *, VALUE *value);
@@ -20,12 +22,11 @@ list_t *parser_parse(parser_t *p) {
 	lexer_next(p->lexer);
 	list_t *ast;
 	if (parse_list(p, &ast)) {
-		if (curr() != T_EOF) {
-			p->error = "expecting EOF";
-			// TODO: free list
-		} else {
-			accept();
+		if (accept_tok(T_EOF)) {
 			return ast;
+		} else {
+			PARSE_ERROR("expecting EOF");
+			obj_dealloc(ast);
 		}
 	}
 	return NULL;
@@ -37,18 +38,32 @@ struct tmp_list_node {
 	struct tmp_list_node *next;
 };
 
+static void free_tmp_list(struct tmp_list_node *head) {
+	while (head) {
+		struct tmp_list_node *next = head->next;
+		OBJ_SAFE_DEALLOC(head->value);
+		free(head);
+		head = next;
+	}
+}
+
 int parse_list(parser_t *p, list_t **list) {
 	size_t length = 0;
 	struct tmp_list_node *head = NULL, *tail = NULL;
-
-	accept2(T_L_PAREN, "expecting '('");
-
+	
+	if (!accept_tok(T_L_PAREN)) {
+		PARSE_ERROR("expecting '('");
+		goto error;
+	}
+	
 	while (curr() != T_R_PAREN) {
 		VALUE parsed;
 		if (parse_value(p, &parsed)) {
 			struct tmp_list_node *tmp = malloc(sizeof(struct tmp_list_node));
 			if (!tmp) {
-				// cleanup
+				PARSE_ERROR("failed to allocate temporary list node");
+				OBJ_SAFE_DEALLOC(parsed);
+				goto error;
 			} else {
 				length++;
 				tmp->next = NULL;
@@ -61,39 +76,34 @@ int parse_list(parser_t *p, list_t **list) {
 				tail = tmp;
 			}
 		} else {
-			// cleanup
-			return 0;
+			goto error;
 		}
 	}
-
-	accept2(T_R_PAREN, "expecting ')'");
+	
+	if (!accept_tok(T_R_PAREN)) {
+		PARSE_ERROR("expecting ')'");
+		goto error;
+	}
 
 	*list = list_create(NULL, length);
-	if (!*list) goto error;
-
-	{
-		struct tmp_list_node *curr = head, *tmp;
-		size_t ix = 0;
-		while (curr) {
-			(*list)->values[ix++] = curr->value;
-			tmp = curr->next;
-			free(curr);
-			curr = tmp;
-		}
+	if (!*list) {
+		PARSE_ERROR("failed to allocate list object");
+		goto error;
 	}
-
+	
+	size_t ix = 0;
+	struct tmp_list_node *curr = head;
+	while (curr) {
+		(*list)->values[ix++] = curr->value;
+		curr = curr->next;
+	}
+	
+	free_tmp_list(head);
 	return 1;
-
+	
 error:
-	{
-		struct tmp_list_node *curr = head, *tmp;
-		while (curr) {
-			tmp = curr->next;
-			free(curr);
-			curr = tmp;
-		}
-	}
-
+	
+	free_tmp_list(head);
 	return 0;
 
 }
@@ -142,6 +152,6 @@ int parse_value(parser_t *p, VALUE *value) {
 		}
 	}
 
-	p->error = "Unexpected token in input";
+	PARSE_ERROR("unexpected token in input");
 	return 0;
 }
