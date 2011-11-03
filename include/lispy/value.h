@@ -70,11 +70,4 @@
 #define SET_IDENT(v, i)			(v = MK_IDENT(i))
 #define IDENT(v)					(((INT)v) >> _IDERN_SHIFT)
 
-// Object
-
-#define VALUE_IS_OBJECT(v)		(VALUE_IS_PTR(v))
-#define VALUE_IS_LIST(v)			(VALUE_IS_OBJECT(v) && OBJ_IS_LIST(v))
-#define VALUE_IS_STRING(v)		(VALUE_IS_OBJECT(v) && OBJ_IS_STRING(v))
-#define VALUE_IS_FLOAT(v)			(VALUE_IS_OBJECT(v) && OBJ_IS_FLOAT(v))
-
 #endif // VALUE_H

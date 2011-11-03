@@ -2,42 +2,98 @@
 
 #include <string.h>
 
-list_t* list_create(void *allocator, size_t length) {
-	list_t *list = malloc(sizeof(list_t));
-	if (list) {
-		list->obj.type = OBJ_TYPE_LIST;
-		list->length = length;
-		list->values = malloc(sizeof(VALUE) * length);
-		if (!list->values) {
-			free(list);
-			list = NULL;
-		}
+#define ROUND(val) ((val + 3) & ~0x03)
+#define OFFSET(obj, bytes) (((char*)obj) + bytes)
+
+//
+// obj def structs for built-in types
+
+static void list_dealloc(void*);
+obj_def_t __obj_type_list = {
+	list_dealloc
+};
+
+obj_def_t __obj_type_string = {
+	NULL
+};
+
+obj_def_t __obj_type_float = {
+	NULL
+};
+
+//
+// obj
+
+void obj_dealloc(void *obj) {
+	obj_t *object = (obj_t*)obj;
+	if (object->is_a->dealloc) {
+		object->is_a->dealloc(object);
 	}
+	ALLOCATOR_FREE(object->allocator, object);
+}
+
+//
+// list
+
+list_t*	list_create(allocator_t *allocator, size_t length) {
+	size_t obj_size  = ROUND(sizeof(list_t));
+	size_t data_size = sizeof(VALUE) * length;
+	
+	list_t *list = ALLOCATOR_ALLOC(allocator, obj_size + data_size);
+	if (list) {
+		OBJECT_SETUP(list, TYPE_LIST, allocator);
+		list->length = length;
+		list->values = (VALUE*) OFFSET(list, obj_size);
+	}
+	
 	return list;
 }
 
-string_t* string_create(void *allocator, char *str) {
-	string_t *string = malloc(sizeof(string_t));
-	string->obj.type = OBJ_TYPE_STRING;
-	string->length = strlen(str);
-	string->string = str;
+static void list_dealloc(void *list) {
+	list_t *self = (list_t*) list;
+	int i;
+	for (i = 0; i < self->length; i++) {
+		if (IS_OBJECT(self->values[i])) obj_dealloc(self->values[i]);
+	}
+}
+
+//
+// string
+
+string_t* string_create(allocator_t *allocator, char *str) {
+	string_t *string = ALLOCATOR_ALLOC(allocator, sizeof(string_t));
+	if (string) {
+		OBJECT_SETUP(string, TYPE_STRING, allocator);
+		string->length = strlen(str);
+		string->string = str;
+	}
 	return string;
 }
 
-string_t* string_create_copy(void *allocator, const char *str) {
-	char *str_copy = malloc(sizeof(char) * (strlen(str) + 1));
-	if (!str_copy) return NULL;
-	strcpy(str_copy, str);
-	string_t *out = string_create(allocator, str_copy);
-	if (!out) free(str_copy);
-	return out;
+string_t* string_create_copy(allocator_t *allocator, const char *str) {
+	size_t obj_size = ROUND(sizeof(string_t));
+	size_t str_size = sizeof(char) * (strlen(str) + 1);
+	
+	string_t *string = ALLOCATOR_ALLOC(allocator, obj_size + str_size);
+	if (string) {
+		OBJECT_SETUP(string, TYPE_STRING, allocator);
+		string->length = strlen(str);
+		string->string = (char*) OFFSET(string, obj_size);
+		strcpy(string->string, str);
+	}
+	
+	return string;
 }
 
-float_t* float_create(void *allocator, float val) {
-	float_t *fl = malloc(sizeof(float_t));
+//
+// float
+
+float_t* float_create(allocator_t *allocator, float val) {
+	float_t *fl = ALLOCATOR_ALLOC(allocator, sizeof(float_t));
 	if (fl) {
-		fl->obj.type = OBJ_TYPE_FLOAT;
+		OBJECT_SETUP(fl, TYPE_FLOAT, allocator);
 		fl->value = val;
 	}
 	return fl;
 }
+
