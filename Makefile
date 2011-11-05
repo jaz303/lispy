@@ -15,7 +15,8 @@ OBJS		=	src/lispy.o \
 				src/lexer.o \
 				src/object.o \
 				src/parser.o \
-				src/intern.o
+				src/intern.o \
+				src/scope.o
 
 # Products
 
