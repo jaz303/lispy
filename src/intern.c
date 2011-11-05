@@ -29,7 +29,7 @@ INTERN intern_table_put(intern_table_t *table, const char *str) {
     INTERN value = intern_table_get_value(table, str);
     if (!value) {
         table->size++;
-        __intern_s2i_put(table, str, table->size);
+        __intern_s2i_put(&table->string_to_intern, str, table->size);
         return table->size;
     } else {
         return value;
@@ -37,9 +37,14 @@ INTERN intern_table_put(intern_table_t *table, const char *str) {
 }
 
 INTERN intern_table_get_value(intern_table_t *table, const char *str) {
-    
+	INTERN out;
+    if (__intern_s2i_read(&table->string_to_intern, str, &out)) {
+    	return out;
+    } else {
+    	return 0;
+    }
 }
 
 const char* intern_table_get_str(intern_table_t *table, INTERN val) {
-    
+    return NULL;
 }
