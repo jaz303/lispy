@@ -150,6 +150,10 @@ int parse_value(parser_t *p, VALUE *value) {
 			accept();
 			return 1;
 		}
+		case T_EOF:
+		case T_ERROR:
+		case T_R_PAREN:
+			break;
 	}
 
 	PARSE_ERROR("unexpected token in input");
