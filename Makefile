@@ -1,7 +1,7 @@
 CC			= gcc
 CPP			= g++
 
-CFLAGS		= -Iinclude -Iext/jazlib/include
+CFLAGS		= -Iinclude -Iext/jazlib/include -Wall -Wno-unused-function
 CPPFLAGS	=
 LDFLAGS		=
 
