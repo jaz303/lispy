@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include "jazlib/common.h"
 
-#define FREE_STRING(k) free((void*)k)
+#define FREE_STRING(hsh, k) free((void*)k)
 
 #include "jazlib/gen_hash_reset.h"
 #define GEN_HASH_HASH_FUNC  hash_djb2
 #define GEN_HASH_KEY_CMP    strcmp
 #define GEN_HASH_KEY_COPY   gen_strcpy
-#define GEN_HASH_KEY_FREE   MYFREES
+#define GEN_HASH_KEY_FREE   FREE_STRING
 #include "jazlib/gen_hash.h"
 GEN_HASH_DECLARE_STATIC_INTERFACE(__intern_s2i, const char *, INTERN);
 GEN_HASH_INIT(__intern_s2i, const char *, INTERN);
