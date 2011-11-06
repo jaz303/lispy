@@ -13,7 +13,7 @@
 #define TYPE_FLOAT			(&__obj_type_float)
 
 #define IS_OBJECT(v)		(VALUE_IS_PTR(v))
-#define IS_A(obj, type) 	((obj_t*)obj->is_a == type)
+#define IS_A(obj, type) 	(((obj_t*)obj)->is_a == type)
 #define IS_LIST(v)			(IS_OBJECT(v) && IS_A(v, TYPE_LIST))
 #define IS_STRING(v)		(IS_OBJECT(v) && IS_A(v, TYPE_STRING))
 #define IS_FLOAT(v)			(IS_OBJECT(v) && IS_A(v, TYPE_FLOAT))
