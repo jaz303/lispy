@@ -80,9 +80,9 @@ typedef struct list {
 } list_t;
 
 list_t*	list_create(allocator_t *allocator, size_t length);
-#define list_len(list) (((list_t*)list)->length)
-#define list_get(list, ix) (((list_t*)list)->values[ix])
-#define list_set(list, ix, val) (((list_t*)list)->values[ix]=(VALUE)val)
+#define list_len(list) (AS_LIST(list)->length)
+#define list_get(list, ix) (AS_LIST(list)->values[ix])
+#define list_set(list, ix, val) (AS_LIST(list)->values[ix]=(VALUE)val)
 
 //
 // string
@@ -95,7 +95,7 @@ typedef struct string {
 
 string_t*	string_create(allocator_t *allocator, char *str);
 string_t*	string_create_copy(allocator_t *allocator, const char *str);
-#define		string_len(string) (((string_t*)string)->length)
+#define		string_len(string) (AS_STRING(string)->length)
 
 //
 // float
