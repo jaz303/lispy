@@ -1,15 +1,10 @@
 CC			= gcc
-CPP			= g++
 
 CFLAGS		= -Iinclude -Iext/jazlib/include -Wall -Wno-unused-function
-CPPFLAGS	=
 LDFLAGS		=
 
-# Config
-
 BUILD_DIR	=	build
-
-# Objects
+BIN_TARGET	=	$(BUILD_DIR)/lispy
 
 OBJS		=	src/lispy.o \
 				src/lexer.o \
@@ -19,19 +14,8 @@ OBJS		=	src/lispy.o \
 				src/scope.o \
 				src/eval.o
 
-# Products
-
-BIN_TARGET	=	$(BUILD_DIR)/lispy
-
-#
-#
-#
-
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
-
-%.o: %.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ $<
 
 obj: $(OBJS)
 
