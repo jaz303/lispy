@@ -9,22 +9,21 @@
 GEN_HASH_DECLARE_STATIC_INTERFACE(__scope_table, INTERN, VALUE);
 GEN_HASH_INIT(__scope_table, INTERN, VALUE);
 
-void scope_init(scope_t *scope, scope_t *parent) {
+void scope_init(scope_t *scope, scope_t *outer) {
 	__scope_table_init(&scope->table);
-	scope->parent = parent;
+	scope->outer = outer;
 }
 
 void scope_dealloc(scope_t *scope) {
 	__scope_table_dealloc(&scope->table);
 }
 
-VALUE scope_find(scope_t *scope, INTERN key) {
+scope_t* scope_find(scope_t *scope, INTERN key) {
 	while (scope) {
-		VALUE out;
-		if (__scope_table_read(&scope->table, key, &out)) {
-			return out;
+		if (__scope_table_contains(&scope->table, key)) {
+			return scope;
 		} else {
-			scope = scope->parent;
+			scope = scope->outer;
 		}
 	}
 	return NULL;
