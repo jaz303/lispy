@@ -15,9 +15,9 @@ void lexer_init(lexer_t *l, const char *text) {
 	l->curr_int		= 0;
 	l->curr_str_sz	= 64;
 	l->curr_str		= calloc(l->curr_str_sz, sizeof(char));
-	l->token			= T_ERROR;
+	l->token		= T_ERROR;
 	l->line			= 1;
-	l->error			= NULL;
+	l->error		= NULL;
 }
 
 //
