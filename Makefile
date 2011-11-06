@@ -16,7 +16,8 @@ OBJS		=	src/lispy.o \
 				src/object.o \
 				src/parser.o \
 				src/intern.o \
-				src/scope.o
+				src/scope.o \
+				src/eval.o
 
 # Products
 
