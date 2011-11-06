@@ -18,6 +18,10 @@
 #define IS_STRING(v)		(IS_OBJECT(v) && IS_A(v, TYPE_STRING))
 #define IS_FLOAT(v)			(IS_OBJECT(v) && IS_A(v, TYPE_FLOAT))
 
+#define AS_LIST(v)			((list_t*)v)
+#define AS_STRING(v)		((string_t*)v)
+#define AS_FLOAT(v)			((float_t*)v)
+
 //
 // allocation macros
 
