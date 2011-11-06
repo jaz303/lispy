@@ -68,9 +68,11 @@ void obj_dealloc(void *obj);
 // list
 
 typedef struct list {
-	obj_t		obj;
-	size_t		length;
-	VALUE		*values;
+	obj_t		obj;							/* object header */
+	size_t		length;							/* number of values in list */
+	VALUE		*values;						/* array of list values */
+	VALUE		(*form)(state_t*, VALUE);		/* evaluation function for this list */
+		
 } list_t;
 
 list_t*	list_create(allocator_t *allocator, size_t length);
