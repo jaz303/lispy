@@ -1,65 +1,73 @@
 #include "lispy/eval.h"
+#include "lispy/binding.h"
 
-#define ENSURE_ARITY(lst, arity, error) \
-	if (list_len(lst) != arity) { \
-		return kError; \
-	}
-	
-#define ENSURE_MIN_ARITY(lst, min_arity, error) \
-	if (list_len(lst) < min_arity) { \
-		return kError; \
-	}
-	
-#define ENSURE_MAX_ARITY(lst, max_arity, error) \
-	if (list_len(lst) > max_arity) { \
-		return kError; \
-	}
+#include <stdio.h>
 
-VALUE eval_list(state_t *state, VALUE v) {
-	ENSURE_MIN_ARITY(v, 1, "can't eval an empty list");
-	EVAL(state, list_get(v, 0));
-	// step 1 - check for head being ident representing a special form; dispatch if so
-	// step 2 - check for head being ident in symbol table; dispatch if so
-	// step 3 - explode
-	return kError;
+#define ENSURE_ARITY(lst, arity)            if (list_len(lst) != arity)     return kError
+#define ENSURE_MIN_ARITY(lst, min_arity)    if (list_len(lst) < min_arity)  return kError
+#define ENSURE_MAX_ARITY(lst, max_arity)    if (list_len(lst) > max_arity)  return kError
+
+#define EVAL(val) (IS_LIST(val) ? (eval_list(env, binding, AS_LIST(val))) : (val))
+
+static VALUE eval_list(env_t *env, binding_t *binding, list_t *list);
+static VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
+    if (list->length > 0) {
+        VALUE head = list_get(list, 0);
+        if (VALUE_IS_IDENT(head)) {
+            switch (IDENT(head)) {
+                case 1:
+                {
+                    printf("def\n");
+                    break;
+                }
+                case 2:
+                {
+                    int i;
+                	VALUE out;
+                	for (i = 1; i < list_len(list); i++) {
+                        out = EVAL(list_get(list, i));
+                	}
+                	return out;
+                }
+                case 3:
+                {
+                    if (list_len(list) == 3) {
+                        return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
+                                ? EVAL(list_get(list, 2))
+                                : kNil;
+                    } else if (list_len(list) == 4) {
+                        return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
+                                ? EVAL(list_get(list, 2))
+                                : EVAL(list_get(list, 3));
+                    } else {
+                        return kError;
+                    }
+                }
+                case 4:
+                {
+                    printf("println\n");
+                    break;
+                }
+                case 5:
+                {
+                    ENSURE_ARITY(list, 2);
+                    return list_get(list, 1);
+                }
+                case 6:
+                {
+                    printf("set\n");
+                    break;
+                }
+                default:
+                {
+                    printf("looking up...\n");
+                }
+            }
+        }
+    }
+    return kError;
 }
 
-VALUE eval_ident(state_t *state, VALUE v) {
-	// look up list ix 0 in symbol table
-	// eval associated function
-	return kError;
+VALUE eval(env_t *env, binding_t *binding, VALUE val) {
+    return EVAL(val);
 }
-
-VALUE eval_do(state_t *state, VALUE v) {
-	list_t *list = AS_LIST(v);
-	int i;
-	VALUE out;
-	for (i = 1; i < list_len(list); i++) {
-		out = EVAL(state, list_get(list, i));
-	}
-	return out;
-}
-
-VALUE eval_if(state_t *state, VALUE v) {
-	list_t *list = AS_LIST(v);
-	if (VALUE_IS_TRUTHY(EVAL(state, list_get(list, 1)))) {
-		return EVAL(state, list_get(list, 2));
-	} else {
-		return EVAL(state, list_get(list, 3));
-	}
-}
-
-VALUE eval_println(state_t *state, VALUE v) {
-	return kError;
-}
-
-VALUE eval_quote(state_t *state, VALUE v) {
-	ENSURE_ARITY(v, 2, "'quote' requires 1 argument");
-	return list_get(v, 1);
-}
-
-VALUE eval_set(state_t *state, VALUE v) {
-	ENSURE_ARITY(v, 3, "'set' form requires 2 arguments");
-	return kError;
-}
-

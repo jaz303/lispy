@@ -1,11 +1,6 @@
 #ifndef VALUE_H
 #define VALUE_H
 
-#include <stdint.h>
-
-#include "lispy/object.h"
-#include "lispy/global.h"
-
 #define _INT_BIT				(1 << 0)
 #define _INT_SHIFT				1
 
@@ -45,7 +40,7 @@
 
 // Nil
 
-#define kNil					(_NIL_MASK)
+#define kNil					((VALUE)(_NIL_MASK))
 
 #define VALUE_IS_NIL(v)			((INT)v == _NIL_MASK)
 #define MK_NIL()				(_NIL_MASK)

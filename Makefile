@@ -6,16 +6,21 @@ LDFLAGS		=
 BUILD_DIR	=	build
 BIN_TARGET	=	$(BUILD_DIR)/lispy
 
-OBJS		=	src/lispy.o \
+OBJS		=	ext/jazlib/src/common.o \
+				src/env.o \
+				src/gc.o \
+				src/lispy.o \
+				src/repl.o \
 				src/lexer.o \
-				src/object.o \
-				src/parser.o \
 				src/intern.o \
-				src/scope.o \
+				src/parser.o \
+				src/binding.o \
 				src/eval.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+default: $(BIN_TARGET)
 
 obj: $(OBJS)
 

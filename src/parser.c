@@ -1,8 +1,9 @@
 #include "lispy/parser.h"
-#include "lispy/value.h"
-#include "lispy/global.h"
 
-#include <stdlib.h>
+#include "lispy/lexer.h"
+#include "lispy/intern.h"
+#include "lispy/gc.h"
+
 #include <stdio.h>
 
 #define curr()				(lexer_current_token(p->lexer))
@@ -14,8 +15,11 @@
 static int parse_list(parser_t *, list_t **list);
 static int parse_value(parser_t *, VALUE *value);
 
-void parser_init(parser_t *p) {
-    p->error = NULL;
+int parser_init(parser_t *p, lexer_t *lexer, env_t *env) {
+    p->lexer    = lexer;
+    p->env      = env;
+    p->error    = NULL;
+    return 1;
 }
 
 list_t *parser_parse(parser_t *p) {
@@ -26,7 +30,6 @@ list_t *parser_parse(parser_t *p) {
 			return ast;
 		} else {
 			PARSE_ERROR("expecting EOF");
-			obj_dealloc(ast);
 		}
 	}
 	return NULL;
@@ -41,7 +44,6 @@ struct tmp_list_node {
 static void free_tmp_list(struct tmp_list_node *head) {
 	while (head) {
 		struct tmp_list_node *next = head->next;
-		OBJ_SAFE_DEALLOC(head->value);
 		free(head);
 		head = next;
 	}
@@ -62,7 +64,6 @@ int parse_list(parser_t *p, list_t **list) {
 			struct tmp_list_node *tmp = malloc(sizeof(struct tmp_list_node));
 			if (!tmp) {
 				PARSE_ERROR("failed to allocate temporary list node");
-				OBJ_SAFE_DEALLOC(parsed);
 				goto error;
 			} else {
 				length++;
@@ -85,8 +86,8 @@ int parse_list(parser_t *p, list_t **list) {
 		goto error;
 	}
 
-	*list = list_create(NULL, length);
-	if (!*list) {
+    *list = gc_alloc_list(&p->env->gc, length);
+    if (!*list) {
 		PARSE_ERROR("failed to allocate list object");
 		goto error;
 	}
@@ -94,7 +95,8 @@ int parse_list(parser_t *p, list_t **list) {
 	size_t ix = 0;
 	struct tmp_list_node *curr = head;
 	while (curr) {
-		(*list)->values[ix++] = curr->value;
+        list_set(*list, ix, curr->value);
+        ix++;
 		curr = curr->next;
 	}
 	
@@ -134,19 +136,19 @@ int parse_value(parser_t *p, VALUE *value) {
 		}
 		case T_ATOM:
 		{
-			*value = MK_ATOM(intern_table_put(p->intern, lexer_current_str(p->lexer)));
+			*value = MK_ATOM(intern_table_put(&p->env->intern, lexer_current_str(p->lexer)));
 			accept();
 			return 1;
 		}
 		case T_IDENT:
 		{
-			*value = MK_IDENT(intern_table_put(p->intern, lexer_current_str(p->lexer)));
+			*value = MK_IDENT(intern_table_put(&p->env->intern, lexer_current_str(p->lexer)));
 			accept();
 			return 1;
 		}
 		case T_STRING:
 		{
-			*value = string_create_copy(NULL, lexer_current_str(p->lexer));
+            *value = gc_alloc_string(&p->env->gc, lexer_current_str(p->lexer));
 			accept();
 			return 1;
 		}

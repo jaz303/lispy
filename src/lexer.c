@@ -9,12 +9,22 @@
 #define emit(t)		l->token = t; return t
 #define errmit(msg)	l->error = msg; emit(T_ERROR)
 
-void lexer_init(lexer_t *l, const char *text) {
+void lexer_init(lexer_t *l) {
+    memset(l, 0, sizeof(lexer_t));
+}
+
+void lexer_reset(lexer_t *l, const char *text) {
 	l->text			= text;
 	l->pos			= 0;
 	l->curr_int		= 0;
-	l->curr_str_sz	= 64;
-	l->curr_str		= calloc(l->curr_str_sz, sizeof(char));
+	
+	if (l->curr_str == NULL) {
+	    l->curr_str_sz = 64;
+        l->curr_str = calloc(l->curr_str_sz, sizeof(char));
+	} else {
+        l->curr_str[0] = '\0';
+	}
+	
 	l->token		= T_ERROR;
 	l->line			= 1;
 	l->error		= NULL;
@@ -56,7 +66,7 @@ static int is_whitespace(char c) {
 static int is_ident_start(char c) {
 	if (c >= 'a' && c <= 'z') return 1;
 	if (c >= 'A' && c <= 'Z') return 1;
-	return strchr("<>=+-*/_", c) != NULL;
+	return strchr("<>=+-*/_!?", c) != NULL;
 }
 
 static int is_ident_body(char c) {
