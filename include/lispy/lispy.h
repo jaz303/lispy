@@ -25,7 +25,8 @@ typedef enum token {
 	T_FALSE			=  5,
 	T_STRING		=  6,
 	T_ATOM			=  7,
-	T_IDENT			=  8
+	T_IDENT			=  8,
+	T_NIL           =  9,
 } token_t;
 
 #include "lispy/value.h"

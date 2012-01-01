@@ -134,6 +134,12 @@ int parse_value(parser_t *p, VALUE *value) {
 			accept();
 			return 1;
 		}
+		case T_NIL:
+		{
+            *value = kNil;
+            accept();
+            return 1;
+		}
 		case T_ATOM:
 		{
 			*value = MK_ATOM(intern_table_put(&p->env->intern, lexer_current_str(p->lexer)));

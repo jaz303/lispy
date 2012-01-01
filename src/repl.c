@@ -29,7 +29,9 @@ static void pretty_print(env_t *env, VALUE v, int i) {
     		printf("%lld\n", INTVAL(v));
     	} else if (VALUE_IS_BOOL(v)) {
     		printf("#%c\n", BOOLVAL(v) ? 't' : 'f');
-    	} else if (VALUE_IS_IDENT(v)) {
+        } else if (VALUE_IS_NIL(v)) {
+            printf("#nil\n");
+        } else if (VALUE_IS_IDENT(v)) {
             printf("%s\n", intern_table_get_str(&env->intern, IDENT(v)));
         } else if (VALUE_IS_ATOM(v)) {
             printf(":%s\n", intern_table_get_str(&env->intern, ATOM(v)));

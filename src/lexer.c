@@ -204,11 +204,21 @@ static token_t scan_string(lexer_t *l) {
 
 }
 
-static token_t scan_boolean(lexer_t *l) {
+static token_t scan_boolean_or_nil(lexer_t *l) {
 	if (curr() != '#') { emit(T_ERROR); }
 	next();
 	if (curr() == 't') { next(); emit(T_TRUE); }
 	if (curr() == 'f') { next(); emit(T_FALSE); }
+	if (curr() == 'n') {
+        next();
+        if (curr() == 'i') {
+            next();
+            if (curr() == 'l') {
+                next();
+                emit(T_NIL);
+            }
+        }
+	}
 	emit(T_ERROR);
 }
 
@@ -264,7 +274,7 @@ token_t lexer_next(lexer_t *l) {
 		case '(':	{ next(); emit(T_L_PAREN); }
 		case ')':	{ next(); emit(T_R_PAREN); }
 		case '"':	return scan_string(l);
-		case '#':	return scan_boolean(l);
+		case '#':	return scan_boolean_or_nil(l);
 		case ':':	return scan_atom(l);
 		default:
 		{

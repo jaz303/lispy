@@ -42,7 +42,7 @@
 
 #define kNil					((VALUE)(_NIL_MASK))
 
-#define VALUE_IS_NIL(v)			((INT)v == _NIL_MASK)
+#define VALUE_IS_NIL(v)			(((INT)v) == _NIL_MASK)
 #define MK_NIL()				(_NIL_MASK)
 #define SET_NIL(v)				(v = MK_NIL())
 
