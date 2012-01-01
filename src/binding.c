@@ -47,3 +47,12 @@ VALUE binding_get(binding_t *binding, INTERN key) {
 void binding_set(binding_t *binding, INTERN key, VALUE value) {
     __binding_table_put(&binding->table, key, value);
 }
+
+VALUE binding_lookup(binding_t *binding, INTERN key) {
+    binding_t *source = binding_find(binding, key);
+    if (source) {
+        return binding_get(binding, key);
+    } else {
+        return kNil;
+    }
+}
