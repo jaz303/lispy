@@ -17,6 +17,7 @@ int env_init(env_t *env) {
     intern_table_put(&env->intern, "println");      // 4
     intern_table_put(&env->intern, "quote");        // 5
     intern_table_put(&env->intern, "set");          // 6
+    intern_table_put(&env->intern, "get");          // 6
     
     env->gc.root = NULL;
     env->gc.head = NULL;

@@ -15,12 +15,19 @@ static VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
         VALUE head = list_get(list, 0);
         if (VALUE_IS_IDENT(head)) {
             switch (IDENT(head)) {
-                case 1:
+                case 1: /* def */
                 {
-                    printf("def\n");
-                    break;
+                    ENSURE_ARITY(list, 3);
+                    VALUE ident = list_get(list, 1),
+                          value = list_get(list, 2);
+                    if (!VALUE_IS_IDENT(ident)) {
+                        return kError;
+                    } else {
+                        binding_set(binding, IDENT(ident), value);
+                    }
+                    return value;
                 }
-                case 2:
+                case 2: /* do */
                 {
                     int i;
                 	VALUE out;
@@ -29,7 +36,7 @@ static VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
                 	}
                 	return out;
                 }
-                case 3:
+                case 3: /* if */
                 {
                     if (list_len(list) == 3) {
                         return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
@@ -43,22 +50,46 @@ static VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
                         return kError;
                     }
                 }
-                case 4:
+                case 4: /* println */
                 {
                     printf("println\n");
                     break;
                 }
-                case 5:
+                case 5: /* quote */
                 {
                     ENSURE_ARITY(list, 2);
                     return list_get(list, 1);
                 }
-                case 6:
+                case 6: /* set */
                 {
-                    printf("set\n");
-                    break;
+                    ENSURE_ARITY(list, 3);
+                    
+                    VALUE ident = list_get(list, 1);
+                    if (!VALUE_IS_IDENT(ident)) {
+                        return kError;
+                    }
+                    
+                    binding_t *source = binding_find(binding, IDENT(ident));
+                    if (source) {
+                        VALUE v = list_get(list, 2);
+                        binding_set(source, IDENT(ident), v);
+                        return v;
+                    } else {
+                        return kError;
+                    }
                 }
-                default:
+                case 7: /* get */
+                {
+                    ENSURE_ARITY(list, 2);
+                    
+                    VALUE ident = list_get(list, 1);
+                    if (!VALUE_IS_IDENT(ident)) {
+                        return kError;
+                    }
+                    
+                    return binding_lookup(binding, IDENT(ident));
+                }
+                default: /* something else */
                 {
                     printf("looking up...\n");
                 }
