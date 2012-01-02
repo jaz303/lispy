@@ -8,46 +8,51 @@
 #define ENSURE_MIN_ARITY(lst, min_arity)    if (list_len(lst) < min_arity)  return kError
 #define ENSURE_MAX_ARITY(lst, max_arity)    if (list_len(lst) > max_arity)  return kError
 
+#define BUILTIN(name) static inline VALUE name(env_t *env, binding_t *binding, list_t *list)
+
+BUILTIN(eval_def) {
+    ENSURE_ARITY(list, 3);
+    VALUE ident = list_get(list, 1),
+          value = list_get(list, 2);
+    if (!VALUE_IS_IDENT(ident)) {
+        return kError;
+    } else {
+        binding_set(binding, IDENT(ident), value);
+    }
+    return value;
+}
+
+BUILTIN(eval_do) {
+    int i;
+	VALUE out;
+	for (i = 1; i < list_len(list); i++) {
+        out = EVAL(list_get(list, i));
+	}
+	return out;
+}
+
+BUILTIN(eval_if) {
+    if (list_len(list) == 3) {
+        return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
+                ? EVAL(list_get(list, 2))
+                : kNil;
+    } else if (list_len(list) == 4) {
+        return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
+                ? EVAL(list_get(list, 2))
+                : EVAL(list_get(list, 3));
+    } else {
+        return kError;
+    }
+}
+
 VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
     if (list->length > 0) {
         VALUE head = list_get(list, 0);
         if (VALUE_IS_IDENT(head)) {
             switch (IDENT(head)) {
-                case 1: /* def */
-                {
-                    ENSURE_ARITY(list, 3);
-                    VALUE ident = list_get(list, 1),
-                          value = list_get(list, 2);
-                    if (!VALUE_IS_IDENT(ident)) {
-                        return kError;
-                    } else {
-                        binding_set(binding, IDENT(ident), value);
-                    }
-                    return value;
-                }
-                case 2: /* do */
-                {
-                    int i;
-                	VALUE out;
-                	for (i = 1; i < list_len(list); i++) {
-                        out = EVAL(list_get(list, i));
-                	}
-                	return out;
-                }
-                case 3: /* if */
-                {
-                    if (list_len(list) == 3) {
-                        return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
-                                ? EVAL(list_get(list, 2))
-                                : kNil;
-                    } else if (list_len(list) == 4) {
-                        return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
-                                ? EVAL(list_get(list, 2))
-                                : EVAL(list_get(list, 3));
-                    } else {
-                        return kError;
-                    }
-                }
+                case 1: return eval_def(env, binding, list);
+                case 2: return eval_do(env, binding, list);
+                case 3: return eval_if(env, binding, list);
                 case 4: /* println */
                 {
                     printf("println\n");
