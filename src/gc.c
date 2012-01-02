@@ -95,3 +95,12 @@ binding_t* gc_alloc_binding(gc_mgr_t *mgr, binding_t *parent) {
     }
     return binding;
 }
+
+native_fn_t* gc_alloc_native_fn(gc_mgr_t *mgr, native_fn *native) {
+    native_fn_t *fn = gc_alloc(mgr, sizeof(native_fn_t));
+    if (fn) {
+        fn->obj.type = TYPE_NATIVE_FN;
+        fn->fn = native;
+    }
+    return fn;
+}

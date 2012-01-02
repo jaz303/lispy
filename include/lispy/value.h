@@ -36,7 +36,7 @@
 #define VALUE_IS_INT(v)			(((INT)v & _INT_BIT) == _INT_BIT)
 #define MK_INTVAL(i)			((VALUE)(((INT)i << _INT_SHIFT) | _INT_BIT))
 #define SET_INTVAL(v, i)		(v = MK_INTVAL(i))
-#define INTVAL(v)				(((INT)v) >> _INT_SHIFT)
+#define INTVAL(v)				(((INT)v) >> (_INT_SHIFT))
 
 // Nil
 

@@ -1,5 +1,6 @@
 #include "lispy/eval.h"
 #include "lispy/binding.h"
+#include "lispy/gc.h"
 
 #include <stdio.h>
 
@@ -7,10 +8,7 @@
 #define ENSURE_MIN_ARITY(lst, min_arity)    if (list_len(lst) < min_arity)  return kError
 #define ENSURE_MAX_ARITY(lst, max_arity)    if (list_len(lst) > max_arity)  return kError
 
-#define EVAL(val) (IS_LIST(val) ? (eval_list(env, binding, AS_LIST(val))) : (val))
-
-static VALUE eval_list(env_t *env, binding_t *binding, list_t *list);
-static VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
+VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
     if (list->length > 0) {
         VALUE head = list_get(list, 0);
         if (VALUE_IS_IDENT(head)) {
@@ -89,9 +87,42 @@ static VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
                     
                     return binding_lookup(binding, IDENT(ident));
                 }
+                case 8: /* first */
+                {
+                    ENSURE_ARITY(list, 2);
+                    
+                    VALUE arg = EVAL(list_get(list, 1));
+                    if (!IS_LIST(arg))      return kError;
+                    if (list_len(arg) < 1)  return kError;
+                    
+                    return list_get(arg, 0);
+                }
+                case 9: /* rest */
+                {
+                    ENSURE_ARITY(list, 2);
+                    
+                    VALUE arg = EVAL(list_get(list, 1));
+                    if (!IS_LIST(arg))      return kError;
+                    if (list_len(arg) < 1)  return kError;
+                    
+                    list_t *rest = gc_alloc_list(&env->gc, list_len(arg) - 1);
+                    int i;
+                    for (i = 1; i < list_len(arg); i++) {
+                        list_set(rest, i - 1, list_get(arg, i));
+                    }
+                    
+                    return (VALUE)rest;
+                }
                 default: /* something else */
                 {
-                    printf("looking up...\n");
+                    VALUE def = binding_lookup(binding, IDENT(head));
+                    if (IS_OBJECT(def)) {
+                        if (IS_A(def, TYPE_NATIVE_FN)) {
+                            return AS_NATIVE_FN(def)->fn(env, binding, list);
+                        }
+                    }
+                    
+                    return kError;
                 }
             }
         }

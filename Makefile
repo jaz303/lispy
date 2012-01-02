@@ -15,7 +15,8 @@ OBJS		=	ext/jazlib/src/common.o \
 				src/intern.o \
 				src/parser.o \
 				src/binding.o \
-				src/eval.o
+				src/eval.o \
+				src/native.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

@@ -29,6 +29,13 @@ typedef enum token {
 	T_NIL           =  9,
 } token_t;
 
+/* Forward Declarations */
+
+typedef struct intern_table intern_table_t;
+typedef struct env env_t;
+
+/* values */
+
 #include "lispy/value.h"
 
 /* objects */
@@ -37,6 +44,7 @@ typedef enum token {
 #define TYPE_STRING         2
 #define TYPE_FLOAT          3
 #define TYPE_BINDING        4
+#define TYPE_NATIVE_FN      5
 
 #define IS_OBJECT(v)		(VALUE_IS_PTR(v))
 #define IS_A(v, t)          (((obj_t*)v)->type == t)
@@ -45,11 +53,13 @@ typedef enum token {
 #define IS_STRING(v)		(IS_OBJECT(v) && IS_A(v, TYPE_STRING))
 #define IS_FLOAT(v)			(IS_OBJECT(v) && IS_A(v, TYPE_FLOAT))
 #define IS_BINDING(v)       (IS_OBJECT(v) && IS_A(v, TYPE_BINDING))
+#define IS_NATIVE_FN(v)     (IS_OBJECT(v) && IS_A(v, TYPE_NATIVE_FN))
 
 #define AS_LIST(v)			((list_t*)v)
 #define AS_STRING(v)		((string_t*)v)
 #define AS_FLOAT(v)			((float_t*)v)
 #define AS_BINDING(v)       ((binding_t*)v)
+#define AS_NATIVE_FN(v)     ((native_fn_t*)v)
 
 typedef struct obj {
     int                 type;
@@ -84,6 +94,14 @@ struct binding {
     __binding_table_t   table;
 };
 
+typedef VALUE (native_fn)(env_t*, binding_t*, list_t*);
+#define LISPY_NATIVE_FN(name) VALUE name(env_t *env, binding_t *binding, list_t *list)
+
+typedef struct {
+    obj_t       obj;
+    native_fn   *fn;
+} native_fn_t;
+
 #define list_len(list)              (AS_LIST(list)->length)
 #define list_get(list, ix)          (AS_LIST(list)->values[ix])
 #define list_set(list, ix, val)     (AS_LIST(list)->values[ix]=(VALUE)val)
@@ -113,20 +131,20 @@ typedef struct gc_mgr {
 #include "jazlib/gen_hash.h"
 GEN_HASH_DECLARE_STORAGE(__intern_s2i, const char *, INTERN);
 
-typedef struct {
+struct intern_table {
     size_t          size;                   /* number of strings in table */
     size_t          strings_sz;             /* size of strings array */
     char            **strings;              /* strings, indexed by intern val */
     __intern_s2i_t  string_to_intern;       /* hash string => intern */
-} intern_table_t;
+};
 
 /* Execution environment */
 
-typedef struct {
+struct env {
     intern_table_t      intern;
     gc_mgr_t            gc;
     binding_t           binding;
-} env_t;
+};
 
 /* Lexer & Parser */
 
