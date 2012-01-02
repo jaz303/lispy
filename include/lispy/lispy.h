@@ -99,6 +99,7 @@ typedef VALUE (native_fn)(env_t*, binding_t*, list_t*);
 
 typedef struct {
     obj_t       obj;
+    size_t      arity;
     native_fn   *fn;
 } native_fn_t;
 

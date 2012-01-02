@@ -5,10 +5,10 @@
 #include "lispy/native.h"
 #include "lispy/gc.h"
 
-static void add_native(env_t *env, const char *name, native_fn *fn) {
+static void add_native(env_t *env, const char *name, size_t arity, native_fn *fn) {
     binding_set(&env->binding,
                 intern_table_put(&env->intern, name),
-                gc_alloc_native_fn(&env->gc, fn));
+                gc_alloc_native_fn(&env->gc, 2, fn));
 }
 
 int env_init(env_t *env) {
@@ -36,7 +36,7 @@ int env_init(env_t *env) {
         return 0;
     }
     
-    add_native(env, "+",                native_plus);
+    add_native(env, "+",                2, native_plus);
     
     
     

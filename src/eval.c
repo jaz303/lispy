@@ -118,7 +118,9 @@ VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
                     VALUE def = binding_lookup(binding, IDENT(head));
                     if (IS_OBJECT(def)) {
                         if (IS_A(def, TYPE_NATIVE_FN)) {
-                            return AS_NATIVE_FN(def)->fn(env, binding, list);
+                            if (list_len(list) - 1 == AS_NATIVE_FN(def)->arity) {
+                                return AS_NATIVE_FN(def)->fn(env, binding, list);
+                            }
                         }
                     }
                     
