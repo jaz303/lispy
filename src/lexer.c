@@ -70,7 +70,7 @@ static int is_ident_start(char c) {
 }
 
 static int is_ident_body(char c) {
-	return is_ident_start(c);
+	return is_ident_start(c) || isdigit(c);
 }
 
 static int is_atom_start(char c) {
