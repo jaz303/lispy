@@ -1,0 +1,7 @@
+1: setjmp/longjmp for abort on error
+2: finish garbage collector, make incremental
+	2.1: bindings should not be garbage collected objects
+3: atom/ident distinction
+4: unicode strings
+5: '( quote syntax
+6: reimplement as VM

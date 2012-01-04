@@ -105,3 +105,15 @@ native_fn_t* gc_alloc_native_fn(gc_mgr_t *mgr, size_t arity, native_fn *native) 
     }
     return fn;
 }
+
+lambda_t* gc_alloc_lambda(gc_mgr_t *mgr, binding_t *binding, list_t *args, list_t *defn) {
+    lambda_t *lambda = gc_alloc(mgr, sizeof(lambda_t));
+    if (lambda) {
+        lambda->obj.type = TYPE_LAMBDA;
+        lambda->binding = binding;
+        lambda->arity = args ? list_len(args) : 0;
+        lambda->args = args;
+        lambda->defn = defn;
+    }
+    return lambda;
+}

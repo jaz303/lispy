@@ -45,6 +45,7 @@ typedef struct env env_t;
 #define TYPE_FLOAT          3
 #define TYPE_BINDING        4
 #define TYPE_NATIVE_FN      5
+#define TYPE_LAMBDA         6
 
 #define IS_OBJECT(v)		(VALUE_IS_PTR(v))
 #define IS_A(v, t)          (((obj_t*)v)->type == t)
@@ -54,12 +55,14 @@ typedef struct env env_t;
 #define IS_FLOAT(v)			(IS_OBJECT(v) && IS_A(v, TYPE_FLOAT))
 #define IS_BINDING(v)       (IS_OBJECT(v) && IS_A(v, TYPE_BINDING))
 #define IS_NATIVE_FN(v)     (IS_OBJECT(v) && IS_A(v, TYPE_NATIVE_FN))
+#define IS_LAMBDA(v)        (IS_OBJECT(v) && IS_A(v, TYPE_LAMBDA))
 
 #define AS_LIST(v)			((list_t*)v)
 #define AS_STRING(v)		((string_t*)v)
 #define AS_FLOAT(v)			((float_t*)v)
 #define AS_BINDING(v)       ((binding_t*)v)
 #define AS_NATIVE_FN(v)     ((native_fn_t*)v)
+#define AS_LAMBDA(v)        ((lambda_t*)v)
 
 typedef struct obj {
     int                 type;
@@ -102,6 +105,14 @@ typedef struct {
     size_t      arity;
     native_fn   *fn;
 } native_fn_t;
+
+typedef struct {
+    obj_t       obj;
+    binding_t   *binding;
+    size_t      arity;
+    list_t      *args;
+    list_t      *defn;
+} lambda_t;
 
 #define list_len(list)              (AS_LIST(list)->length)
 #define list_get(list, ix)          (AS_LIST(list)->values[ix])

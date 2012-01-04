@@ -51,7 +51,7 @@ void binding_set(binding_t *binding, INTERN key, VALUE value) {
 VALUE binding_lookup(binding_t *binding, INTERN key) {
     binding_t *source = binding_find(binding, key);
     if (source) {
-        return binding_get(binding, key);
+        return binding_get(source, key);
     } else {
         return kNil;
     }
