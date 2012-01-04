@@ -71,7 +71,6 @@ typedef struct obj {
 typedef struct {
 	obj_t		obj;							/* object header */
 	size_t		length;							/* number of values in list */
-//	VALUE		(*form)(state_t*, VALUE);		/* evaluation function for this list */
     VALUE       values[0];                      /* array of list values */
 } list_t;
 
