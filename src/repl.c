@@ -32,7 +32,11 @@ void repl_run(env_t *env) {
         list_t *list = parser_parse(&parser);
         
         if (list) {
-            pretty_print(env, eval(env, &env->binding, list), 0);
+            if (setjmp(env->error_jmp)) {
+                printf("Error: %s\n", env->error);
+            } else {
+                pretty_print(env, eval(env, &env->binding, list), 0);
+            }
         } else {
             printf("parse error: %s\n", parser.error);
         }

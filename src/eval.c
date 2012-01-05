@@ -8,6 +8,11 @@
 // http://norvig.com/lispy.html
 // http://norvig.com/lispy2.html
 
+static void abort_error(env_t *env, const char *msg) {
+    env->error = msg;
+    longjmp(env->error_jmp, 0);
+}
+
 #define ENSURE_ARITY(lst, arity)            if (list_len(lst) != arity)     return kError
 #define ENSURE_MIN_ARITY(lst, min_arity)    if (list_len(lst) < min_arity)  return kError
 #define ENSURE_MAX_ARITY(lst, max_arity)    if (list_len(lst) > max_arity)  return kError
@@ -28,9 +33,10 @@ BUILTIN(eval_if) {
         return VALUE_IS_TRUTHY(EVAL(list_get(list, 1)))
                 ? EVAL(list_get(list, 2))
                 : EVAL(list_get(list, 3));
-    } else {
-        return kError;
     }
+    
+    abort_error(env, "form `if` expects 2 or 3 args");
+    return kUnreachable;
 }
 
 BUILTIN(eval_set) {
@@ -38,7 +44,8 @@ BUILTIN(eval_set) {
     
     VALUE ident = list_get(list, 1);
     if (!VALUE_IS_IDENT(ident)) {
-        return kError;
+        abort_error(env, "arg 1 of form `set!` must be an ident");
+        return kUnreachable;
     }
     
     binding_t *source = binding_find(binding, IDENT(ident));
@@ -46,9 +53,10 @@ BUILTIN(eval_set) {
         VALUE v = EVAL(list_get(list, 2));
         binding_set(source, IDENT(ident), v);
         return v;
-    } else {
-        return kError;
     }
+    
+    abort_error(env, "can't set undefined identifier");
+    return kUnreachable;
 }
 
 BUILTIN(eval_define) {

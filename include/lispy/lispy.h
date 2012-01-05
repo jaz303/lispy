@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 
 #ifdef _LP64
 	typedef void*       VALUE;
@@ -155,6 +156,8 @@ struct env {
     intern_table_t      intern;
     gc_mgr_t            gc;
     binding_t           binding;
+    jmp_buf             error_jmp;
+    const char          *error;
 };
 
 /* Lexer & Parser */

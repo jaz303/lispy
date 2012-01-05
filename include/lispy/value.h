@@ -29,6 +29,7 @@
 // Error
 
 #define kError					0
+#define kUnreachable            0
 #define VALUE_IS_ERROR(v)		(((INT)v) == kError)
 
 // Integers
