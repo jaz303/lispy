@@ -28,6 +28,7 @@ typedef enum token {
 	T_ATOM			=  7,
 	T_IDENT			=  8,
 	T_NIL           =  9,
+	T_QUOTE         =  10,
 } token_t;
 
 /* Forward Declarations */

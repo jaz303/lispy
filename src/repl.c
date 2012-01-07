@@ -29,13 +29,12 @@ void repl_run(env_t *env) {
         lexer_reset(&lexer, buffer);
         parser_init(&parser, &lexer, env);
         
-        list_t *list = parser_parse(&parser);
-        
-        if (list) {
+        VALUE value = parser_parse(&parser);
+        if (value != kError) {
             if (setjmp(env->error_jmp)) {
                 printf("Error: %s\n", env->error);
             } else {
-                pretty_print(env, eval(env, &env->binding, list), 0);
+                pretty_print(env, eval(env, &env->binding, value), 0);
             }
         } else {
             printf("parse error: %s\n", parser.error);

@@ -273,6 +273,7 @@ token_t lexer_next(lexer_t *l) {
 		case 0:		{ emit(T_EOF); }
 		case '(':	{ next(); emit(T_L_PAREN); }
 		case ')':	{ next(); emit(T_R_PAREN); }
+        case '\'':  { next(); emit(T_QUOTE); }
 		case '"':	return scan_string(l);
 		case '#':	return scan_boolean_or_nil(l);
 		case ':':	return scan_atom(l);

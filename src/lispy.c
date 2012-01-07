@@ -43,9 +43,12 @@ int main(int argc, char *argv[]) {
 
                     parser_init(&parser, &lexer, &env);
 
-                    list_t *list = parser_parse(&parser);
-                    if (list) {
-                        out = eval(&env, &env.binding, list);
+                    VALUE value = parser_parse(&parser);
+                    if (IS_LIST(value)) {
+                        out = eval(&env, &env.binding, value);
+                    } else if (value != NULL) {
+                        printf("error: top level object must be list\n");
+                        exit(1);
                     } else {
                         printf("parse error: %s\n", parser.error);
                         exit(1);

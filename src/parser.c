@@ -22,17 +22,17 @@ int parser_init(parser_t *p, lexer_t *lexer, env_t *env) {
     return 1;
 }
 
-list_t *parser_parse(parser_t *p) {
+VALUE parser_parse(parser_t *p) {
 	lexer_next(p->lexer);
-	list_t *ast;
-	if (parse_list(p, &ast)) {
-		if (accept_tok(T_EOF)) {
-			return ast;
-		} else {
-			PARSE_ERROR("expecting EOF");
-		}
+    VALUE ast;
+	if (parse_value(p, &ast)) {
+	    if (accept_tok(T_EOF)) {
+            return ast;
+	    } else {
+            PARSE_ERROR("expecting EOF");
+	    }
 	}
-	return NULL;
+    return kError;
 }
 
 struct tmp_list_node;
@@ -122,6 +122,26 @@ int parse_value(parser_t *p, VALUE *value) {
 		{
 			return parse_list(p, (list_t**)value);
 		}
+		case T_QUOTE:
+		{
+		    accept();
+		    
+            list_t *to_quote;
+            if (!parse_list(p, &to_quote)) {
+                return 0;
+            }
+            
+            *value = gc_alloc_list(&p->env->gc, 2);
+            if (!*value) {
+                PARSE_ERROR("failed to allocate list object");
+                return 0;
+            }
+		    
+            list_set(*value, 0, MK_IDENT(intern_table_put(&p->env->intern, "quote")));
+            list_set(*value, 1, to_quote);
+            
+            return 1;
+        }
 		case T_TRUE:
 		{
 			*value = kTrue;
