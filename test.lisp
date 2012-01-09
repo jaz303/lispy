@@ -8,11 +8,12 @@
 	(define foo 100)
 	
 	(if #f
-		(add 200)
-		(add 100))
+		(pprint (add 200 200))
+		(pprint (add 100 100)))
 		
 	(define add-10 (make-adder 10))
 	(define add-20 (make-adder 20))
+	(define add-foo (make-adder foo))
 	
-	(add-20 foo)
+	(pprint (add-foo 15))
 )
