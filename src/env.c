@@ -36,16 +36,18 @@ int env_init(env_t *env) {
     
     add_native(env, "+",                2, native_plus);
     
-    
-    
     // +
 	// -
 	// /
 	// *
 	// pow
 	// exp
-	// eq
+	// eq?
 	// neq
+	// cdr, car
+	// gt? etc
+	// cons
+	// nil?
     
     return 1;
 }
