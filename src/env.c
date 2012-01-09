@@ -25,6 +25,7 @@ int env_init(env_t *env) {
     intern_table_put(&env->intern, "define");       // 4
     intern_table_put(&env->intern, "lambda");       // 5
     intern_table_put(&env->intern, "begin");        // 6
+    intern_table_put(&env->intern, "pprint");       // 7
     
     env->gc.root = NULL;
     env->gc.head = NULL;

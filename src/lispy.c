@@ -59,8 +59,6 @@ int main(int argc, char *argv[]) {
                 }
             }
             
-            pretty_print(&env, out, 0);
-            
         }
     
     } else {

@@ -2,6 +2,7 @@
 #include "lispy/binding.h"
 #include "lispy/gc.h"
 #include "lispy/intern.h"
+#include "lispy/io.h"
 
 #include <stdio.h>
 
@@ -120,6 +121,11 @@ BUILTIN(eval_begin) {
 	return out;
 }
 
+BUILTIN(eval_pprint) {
+    pretty_print(env, EVAL(list_get(list, 1)), 0);
+    return kNil;
+}
+
 VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
     
     if (list_len(list) == 0) {
@@ -137,6 +143,7 @@ VALUE eval_list(env_t *env, binding_t *binding, list_t *list) {
             case 4:     return eval_define(env, binding, list);
             case 5:     return eval_lambda(env, binding, list);
             case 6:     return eval_begin(env, binding, list);
+            case 7:     return eval_pprint(env, binding, list);
         }
     }
     
